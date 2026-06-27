@@ -6,12 +6,22 @@ import fs from "fs";
 
 const execAsync = promisify(exec);
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
 
     if (!url) {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+      return NextResponse.json({ error: "URL is required" }, { status: 400, headers: corsHeaders });
     }
 
     const isWin = process.platform === "win32";
@@ -33,7 +43,7 @@ export async function POST(req: Request) {
 
     // Some single videos are returned as type "video", but playlists are type "playlist"
     if (info._type !== "playlist" || !info.entries) {
-      return NextResponse.json({ error: "Not a valid playlist URL" }, { status: 400 });
+      return NextResponse.json({ error: "Not a valid playlist URL" }, { status: 400, headers: corsHeaders });
     }
 
     // Map the playlist entries
@@ -56,12 +66,12 @@ export async function POST(req: Request) {
       entries: entries,
     };
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: corsHeaders });
   } catch (error: any) {
     console.error("Error fetching playlist:", error);
     return NextResponse.json(
       { error: "Failed to fetch playlist information. Ensure the URL is valid." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

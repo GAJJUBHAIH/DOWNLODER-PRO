@@ -23,6 +23,15 @@ function spawnYtDlp(url: string, formatId: string) {
     url
   ]);
 }
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { headers: corsHeaders });
+}
 
 export async function GET(req: Request) {
   try {
@@ -32,7 +41,7 @@ export async function GET(req: Request) {
     const ext = searchParams.get("ext") || "mp4";
 
     if (!url || !formatId) {
-      return NextResponse.json({ error: "URL and format are required" }, { status: 400 });
+      return NextResponse.json({ error: "URL and format are required" }, { status: 400, headers: corsHeaders });
     }
 
     const filename = `video_${Date.now()}.${ext}`;
@@ -77,10 +86,11 @@ export async function GET(req: Request) {
       headers: {
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Content-Type": ext === "mp4" ? "video/mp4" : "application/octet-stream",
+        ...corsHeaders,
       },
     });
   } catch (error: any) {
     console.error("Download Error:", error);
-    return NextResponse.json({ error: "Failed to start download process." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to start download process." }, { status: 500, headers: corsHeaders });
   }
 }

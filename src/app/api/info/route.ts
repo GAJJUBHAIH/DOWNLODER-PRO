@@ -6,12 +6,22 @@ import fs from "fs";
 
 const execAsync = promisify(exec);
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
   try {
     const { url } = await req.json();
 
     if (!url) {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+      return NextResponse.json({ error: "URL is required" }, { status: 400, headers: corsHeaders });
     }
 
     const isWin = process.platform === "win32";
@@ -92,12 +102,12 @@ export async function POST(req: Request) {
       formats: formats,
     };
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: corsHeaders });
   } catch (error: any) {
     console.error("Error fetching info:", error);
     return NextResponse.json(
       { error: "Failed to fetch video information. Ensure the URL is valid and public." },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
