@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: downloader-pro
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PYTHON_VERSION
+        value: 3.10.12
