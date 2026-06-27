@@ -43,7 +43,8 @@ export default function PlaylistResult({ playlist }: PlaylistResultProps) {
 
     setLoadingMap((prev) => ({ ...prev, [entry.id]: true }));
     try {
-      const res = await fetch("/api/info", {
+      const API_BASE = process.env.NODE_ENV === "development" ? "" : "https://downloder-pro.onrender.com";
+      const res = await fetch(`${API_BASE}/api/info`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: entry.url }),
@@ -62,7 +63,8 @@ export default function PlaylistResult({ playlist }: PlaylistResultProps) {
   const handleDownload = async (url: string, formatId: string, ext: string) => {
     setIsDownloading(true);
     try {
-      const downloadUrl = `/api/download?url=${encodeURIComponent(url)}&format=${formatId}&ext=${ext}`;
+      const API_BASE = process.env.NODE_ENV === "development" ? "" : "https://downloder-pro.onrender.com";
+      const downloadUrl = `${API_BASE}/api/download?url=${encodeURIComponent(url)}&format=${formatId}&ext=${ext}`;
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = downloadUrl;

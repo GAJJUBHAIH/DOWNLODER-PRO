@@ -23,7 +23,8 @@ export default function Downloader() {
     setVideoInfo(null);
     setPlaylistInfo(null);
 
-    const apiRoute = mode === "single" ? "/api/info" : "/api/playlist";
+    const API_BASE = process.env.NODE_ENV === "development" ? "" : "https://downloder-pro.onrender.com";
+    const apiRoute = mode === "single" ? `${API_BASE}/api/info` : `${API_BASE}/api/playlist`;
 
     try {
       const res = await fetch(apiRoute, {
@@ -59,7 +60,8 @@ export default function Downloader() {
         throw new Error("Video URL is missing.");
       }
       
-      const downloadUrl = `/api/download?url=${encodeURIComponent(
+      const API_BASE = process.env.NODE_ENV === "development" ? "" : "https://downloder-pro.onrender.com";
+      const downloadUrl = `${API_BASE}/api/download?url=${encodeURIComponent(
         url
       )}&format=${formatId}&ext=${ext}`;
       
