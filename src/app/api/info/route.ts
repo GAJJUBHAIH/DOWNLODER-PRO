@@ -14,7 +14,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", "yt-dlp.exe");
+    const isWin = process.platform === "win32";
+    const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
+    const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
     
     if (!fs.existsSync(binaryPath)) {
       throw new Error(`yt-dlp binary not found at ${binaryPath}`);

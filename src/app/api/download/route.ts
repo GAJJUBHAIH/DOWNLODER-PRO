@@ -5,7 +5,9 @@ import fs from "fs";
 
 function spawnYtDlp(url: string, formatId: string) {
   const { spawn } = require("child_process");
-  const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", "yt-dlp.exe");
+  const isWin = process.platform === "win32";
+  const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
+  const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
   
   if (!fs.existsSync(binaryPath)) {
     throw new Error(`yt-dlp binary not found at ${binaryPath}`);
