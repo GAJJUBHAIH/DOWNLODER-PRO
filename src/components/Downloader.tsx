@@ -38,6 +38,20 @@ function detectPlatform(url: URL) {
   return { name: "Web link", short: "WEB", color: "#00a6bf", domains: [], note: "General web URL." };
 }
 
+function formatBytes(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "Unknown size";
+  const units = ["B", "KB", "MB", "GB"];
+  let size = bytes;
+  let unit = 0;
+
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+
+  return `${size.toFixed(size >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
 function parseUrl(value: string) {
   const withProtocol = /^[a-z][a-z\d+\-.]*:\/\//i.test(value) ? value : `https://${value}`;
   try {
@@ -373,7 +387,7 @@ export default function Downloader() {
                     >
                       {result.formats.map((fmt: any) => (
                         <option key={fmt.format_id} value={fmt.format_id}>
-                          {fmt.label || `${fmt.resolution} ${fmt.hasAudio ? "🔊" : "🔇"} ${fmt.ext}`}
+                          {fmt.label || `${fmt.resolution} ${fmt.hasAudio ? "🔊" : "🔇"} ${fmt.ext}`} - {formatBytes(fmt.filesize)}
                         </option>
                       ))}
                     </select>
