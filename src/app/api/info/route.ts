@@ -54,31 +54,57 @@ export async function POST(req: Request) {
     }
 
     // Standardize format list
-    const formatPromises = (info.formats || []).map(async (f: any) => {
+    const parsedFormats = (info.formats || []).map((f: any) => {
       let filesize = f.filesize || f.filesize_approx;
       
       // Try to estimate filesize if missing from metadata
       if (!filesize) {
         if (f.tbr && duration) {
           filesize = (f.tbr * 1000 / 8) * duration;
-        } else if (f.url) {
-          filesize = await getFileSizeFromHeader(f.url);
         }
+      }
+
+      const hasAudio = f.acodec !== "none";
+      const hasVideo = f.vcodec !== "none";
+      
+      let label = "Unknown";
+      if (hasVideo && hasAudio) {
+        label = `Video ${f.height ? f.height + 'p' : f.resolution} (${f.ext})`;
+      } else if (hasAudio && !hasVideo) {
+        label = `Audio Only (${f.ext})`;
+      } else if (hasVideo && !hasAudio) {
+        label = `Video Only ${f.height ? f.height + 'p' : f.resolution} (${f.ext}) - No Audio`;
       }
 
       return {
         format_id: f.format_id,
         ext: f.ext,
-        resolution: f.resolution || (f.vcodec !== "none" ? `${f.width}x${f.height}` : "audio only"),
+        resolution: f.resolution || (hasVideo ? `${f.width}x${f.height}` : "audio only"),
+        height: f.height || 0,
         filesize: filesize || 0,
         format_note: f.format_note,
-        hasAudio: f.acodec !== "none",
-        hasVideo: f.vcodec !== "none",
+        hasAudio,
+        hasVideo,
+        label,
         url: f.url,
       };
     });
     
-    const formats = await Promise.all(formatPromises);
+    // Filter formats to only include those that have audio (Video+Audio or Audio Only)
+    // We stream directly, so we can't merge video and audio on the fly.
+    const playableFormats = parsedFormats.filter((f: any) => f.hasAudio);
+    
+    // Sort: Video+Audio (highest resolution first), then Audio Only
+    playableFormats.sort((a: any, b: any) => {
+      if (a.hasVideo && !b.hasVideo) return -1;
+      if (!a.hasVideo && b.hasVideo) return 1;
+      if (a.hasVideo && b.hasVideo) {
+        return b.height - a.height;
+      }
+      return 0;
+    });
+
+    const formats = playableFormats;
 
     const result = {
       id: info.id,

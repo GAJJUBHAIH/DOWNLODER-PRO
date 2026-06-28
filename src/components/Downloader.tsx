@@ -370,7 +370,7 @@ export default function Downloader() {
                     >
                       {result.formats.map((fmt: any) => (
                         <option key={fmt.format_id} value={fmt.format_id}>
-                          {fmt.resolution} {fmt.hasAudio ? "🔊" : "🔇"} {fmt.ext}
+                          {fmt.label || `${fmt.resolution} ${fmt.hasAudio ? "🔊" : "🔇"} ${fmt.ext}`}
                         </option>
                       ))}
                     </select>
