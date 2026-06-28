@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
-import { create } from "yt-dlp-exec";
+import { spawn } from "child_process";
 import path from "path";
 
 const isWin = process.platform === "win32";
 const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
 const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
-const ytDlp = create(binaryPath);
 
 function spawnYtDlp(url: string, formatId: string) {
-  return ytDlp.exec(url, {
-    format: formatId,
-    output: "-",
-  });
+  return spawn(binaryPath, [
+    "--format", formatId,
+    "--output", "-",
+    "--no-warnings",
+    "--quiet", // important to avoid logs corrupting stdout binary
+    url
+  ]);
 }
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
