@@ -106,7 +106,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Error fetching info:", error);
     return NextResponse.json(
-      { error: "Failed to fetch video information. Ensure the URL is valid and public." },
+      { error: "Failed to fetch video information: " + (error.message || String(error)) },
       { status: 500, headers: corsHeaders }
     );
   }
