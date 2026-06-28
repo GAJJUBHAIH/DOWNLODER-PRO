@@ -1,27 +1,12 @@
 import { NextResponse } from "next/server";
 import { Readable } from "stream";
-import path from "path";
-import fs from "fs";
+import ytDlp from "yt-dlp-exec";
 
 function spawnYtDlp(url: string, formatId: string) {
-  const { spawn } = require("child_process");
-  const isWin = process.platform === "win32";
-  const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
-  const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
-  
-  if (!fs.existsSync(binaryPath)) {
-    throw new Error(`yt-dlp binary not found at ${binaryPath}`);
-  }
-
-  // yt-dlp streams the downloaded (and potentially merged) file directly to stdout
-  // This correctly handles HLS playlists (.m3u8) and DASH streams natively!
-  return spawn(binaryPath, [
-    "-f",
-    formatId,
-    "-o",
-    "-",
-    url
-  ]);
+  return ytDlp.exec(url, {
+    format: formatId,
+    output: "-",
+  });
 }
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

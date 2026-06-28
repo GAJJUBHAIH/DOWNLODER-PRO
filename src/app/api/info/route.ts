@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
-import path from "path";
-import fs from "fs";
-
-const execAsync = promisify(exec);
+import ytDlp from "yt-dlp-exec";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,29 +19,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400, headers: corsHeaders });
     }
 
-    const isWin = process.platform === "win32";
-    const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
-    const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
+    // Fetch video info natively using yt-dlp-exec
+    const info: any = await ytDlp(url, {
+      dumpJson: true,
+      noWarnings: true,
+      noPlaylist: true,
+      preferFreeFormats: true,
+      addHeader: ["referer:youtube.com", "user-agent:Mozilla/5.0"]
+    });
     
-    if (!fs.existsSync(binaryPath)) {
-      throw new Error(`yt-dlp binary not found at ${binaryPath}`);
-    }
-
-    // Fetch video info using local yt-dlp binary
-    const { stdout } = await execAsync(
-      `"${binaryPath}" --dump-json --no-warnings --no-playlist --prefer-free-formats --add-header "referer:youtube.com" --add-header "user-agent:Mozilla/5.0" "${url}"`,
-      { maxBuffer: 20 * 1024 * 1024 } // 20MB limit
-    );
-    
-    let info;
-    try {
-      // In case of a playlist or multiple outputs, only take the first JSON object
-      const jsonString = stdout.trim().split('\n')[0];
-      info = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error("Failed to parse yt-dlp output:", stdout.substring(0, 200));
-      throw new Error("Invalid output from video extractor.");
-    }
     const duration = info.duration || 0;
 
     // Helper to fetch size via HEAD request if missing

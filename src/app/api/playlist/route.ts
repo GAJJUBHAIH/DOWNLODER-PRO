@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
-import path from "path";
-import fs from "fs";
-
-const execAsync = promisify(exec);
+import ytDlp from "yt-dlp-exec";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,22 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400, headers: corsHeaders });
     }
 
-    const isWin = process.platform === "win32";
-    const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
-    const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
-    
-    if (!fs.existsSync(binaryPath)) {
-      throw new Error(`yt-dlp binary not found at ${binaryPath}`);
-    }
-
-    // Fetch playlist info using local yt-dlp binary
-    // --flat-playlist ensures we don't fetch heavy format lists for every video
-    const { stdout } = await execAsync(
-      `"${binaryPath}" --dump-single-json --no-warnings --flat-playlist --add-header "referer:youtube.com" --add-header "user-agent:Mozilla/5.0" "${url}"`,
-      { maxBuffer: 20 * 1024 * 1024 } // 20MB limit
-    );
-    
-    const info = JSON.parse(stdout);
+    const info: any = await ytDlp(url, {
+      dumpSingleJson: true,
+      noWarnings: true,
+      flatPlaylist: true,
+      addHeader: ["referer:youtube.com", "user-agent:Mozilla/5.0"]
+    });
 
     // Some single videos are returned as type "video", but playlists are type "playlist"
     if (info._type !== "playlist" || !info.entries) {
