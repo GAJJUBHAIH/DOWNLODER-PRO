@@ -232,7 +232,10 @@ export default function Downloader() {
     e.preventDefault();
     if (!result.selectedFormatId) return showToast("Select a format first");
     
-    const downloadUrl = `${API_BASE}/api/download?url=${encodeURIComponent(result.directUrl)}&formatId=${encodeURIComponent(result.selectedFormatId)}`;
+    const selectedFormat = result.formats.find((f: any) => f.format_id === result.selectedFormatId);
+    const ext = selectedFormat ? selectedFormat.ext : "mp4";
+    
+    const downloadUrl = `${API_BASE}/api/download?url=${encodeURIComponent(result.directUrl)}&format=${encodeURIComponent(result.selectedFormatId)}&ext=${encodeURIComponent(ext)}`;
     
     const anchor = document.createElement("a");
     anchor.href = downloadUrl;
