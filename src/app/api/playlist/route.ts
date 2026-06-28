@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import ytDlp from "yt-dlp-exec";
+import { create } from "yt-dlp-exec";
+import path from "path";
+
+const isWin = process.platform === "win32";
+const binaryName = isWin ? "yt-dlp.exe" : "yt-dlp";
+const binaryPath = path.join(process.cwd(), "node_modules", "yt-dlp-exec", "bin", binaryName);
+const ytDlp = create(binaryPath);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
